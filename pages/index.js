@@ -34,19 +34,23 @@ export default function Home() {
     setGreeting(greet);
 
     // ✅ Send to Supabase
-    supabase.from('visits').insert([
-      {
-        page: 'home',
-        user_id: userId,
-        extra: { hour: hour }
-      }
-    ]).then(({ error }) => {
-      if (error) {
-        console.error('❌ Supabase Error:', error.message);
-      } else {
-        console.log('✅ Visit logged to Supabase');
-      }
-    });
+    supabase
+  .from('visits')
+  .insert([
+    {
+      page: 'home',
+      user_id: userId,
+      extra: { hour: hour }
+    }
+  ])
+  .then(({ data, error }) => {
+    if (error) {
+      console.error('❌ Supabase insert error:', error.message);
+    } else {
+      console.log('✅ Visit logged to Supabase:', data);
+    }
+  });
+
 
   }, [mounted]);
 

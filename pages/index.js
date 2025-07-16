@@ -5,30 +5,34 @@ export default function Home() {
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
-    // 1. Create or get stored user_id
+    // Generate or fetch stored user_id
     let userId = localStorage.getItem('user_id');
     if (!userId) {
       userId = crypto.randomUUID();
       localStorage.setItem('user_id', userId);
     }
 
-    // 2. Determine time of day
+    // Get time of day
     const hour = new Date().getHours();
-    let greet = '';
-    if (hour < 12) greet = 'Good Morning ☀️';
-    else if (hour < 18) greet = 'Good Afternoon 🌤️';
-    else greet = 'Good Evening 🌙';
-
+    const greet = hour < 12 ? 'Good Morning ☀️'
+                : hour < 18 ? 'Good Afternoon 🌤️'
+                : 'Good Evening 🌙';
     setGreeting(greet);
 
-    // 3. Log visit to Supabase
+    // Log visit to Supabase
     supabase.from('visits').insert([
       {
         page: 'home',
         user_id: userId,
         extra: { hour: hour }
       }
-    ]);
+    ]).then(({ error }) => {
+      if (error) {
+        console.error('Supabase insert error:', error.message);
+      } else {
+        console.log('Visit logged to Supabase ✅');
+      }
+    });
   }, []);
 
   return (

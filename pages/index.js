@@ -1,63 +1,45 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabaseClient'; // <-- correct path
 
 export default function Home() {
-  const [greeting, setGreeting] = useState('');
-  const [mounted, setMounted] = useState(false);
+  const [greeting, setGreeting] = useState('Hello 👋');
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    // ✅ Ensure it's only running in browser
+    // Only run in the browser (avoids SSR hydration issues)
     if (typeof window === 'undefined') return;
 
-    // ✅ Handle user ID generation safely
-    let userId = localStorage.getItem('user_id');
+    // Persist a simple anonymous user id
+    let userId = window.localStorage.getItem('user_id');
     if (!userId) {
-      try {
-        userId = self.crypto.randomUUID();
-      } catch (e) {
-        userId = Math.random().toString(36).substring(2); // fallback
-      }
-      localStorage.setItem('user_id', userId);
+      userId = (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+      window.localStorage.setItem('user_id', userId);
     }
 
-    // ✅ Time-based greeting
+    // Time-based greeting
     const hour = new Date().getHours();
-    const greet = hour < 12 ? 'Good Morning ☀️'
-              : hour < 18 ? 'Good Afternoon 🌤️'
-              : 'Good Evening 🌙';
+    const greet =
+      hour < 12 ? 'Good Morning ☀️' :
+      hour < 18 ? 'Good Afternoon 🌤️' :
+      'Good Evening 🌙';
     setGreeting(greet);
 
-    // ✅ Send to Supabase
+    // Log visit to Supabase
     supabase
-  .from('visits')
-  .insert([
-    {
-      page: 'home',
-      user_id: userId,
-      extra: { hour: hour }
-    }
-  ])
-  .then(({ data, error }) => {
-    if (error) {
-      console.error('❌ Supabase insert error:', error.message);
-    } else {
-      console.log('✅ Visit logged to Supabase:', data);
-    }
-  });
-
-
-  }, [mounted]);
+      .from('visits')
+      .insert([{ page: 'home', user_id: userId, extra: { hour } }])
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('❌ Supabase insert error:', error);
+        } else {
+          console.log('✅ Visit logged to Supabase:', data);
+        }
+      });
+  }, []);
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h1>{greeting || 'Hello 👋'}</h1>
+    <main style={{ padding: '2rem', fontFamily: 'Arial' }}>
+      <h1>{greeting}, Welcome to Dyna-site 👋</h1>
       <p>This site adapts to your journey — powered by Dyna-sites.</p>
-    </div>
+    </main>
   );
 }

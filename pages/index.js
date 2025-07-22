@@ -1,3 +1,4 @@
+import { logClick } from '../lib/utils/clickTracker';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient'; // <-- correct path
 
@@ -41,5 +42,11 @@ export default function Home() {
       <h1>{greeting}, Welcome to Dyna-site 👋</h1>
       <p>This site adapts to your journey — powered by Dyna-sites.</p>
     </main>
+    <button
+  onClick={() => logClick('cta_button')}
+  style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}
+>
+  Click me!
+</button>
   );
 }
